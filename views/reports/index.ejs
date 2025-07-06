@@ -351,10 +351,10 @@ ${profitStats && Object.keys(profitStats).length > 0 ? `
                             <th>الملف/الشركة</th>
                             <th>الموزع</th>
                             <th>اجمالي الفاتورة</th>
-                            <th>النسبة </th>
-                            <th>الضريبة </th>
-                            <th>ضريبة الشركة</th>
-                            <th> الربح</th>
+                            <th>عمولة العميل</th>
+                            <th>عمولة الموزع</th>
+                            <th>عمولة الشركة</th>
+                            <th>صافي الربح</th>
                             <th>حالة الدفع</th>
                             <th>التاريخ</th>
                         </tr>
@@ -396,16 +396,22 @@ ${profitStats && Object.keys(profitStats).length > 0 ? `
                                     <td>${invoice.assignedDistributor?.username || 'غير محدد'}</td>
                                     <td><span class="badge bg-primary">${invoice.amount.toLocaleString('ar-SA')} جنيه</span></td>
                                     <td>
-                                        <div>%${invoice.clientCommissionRate}</div>
-                                        <small class="text-muted">${clientCommission.toFixed(2)} جنيه</small>
+                                        <div class="commission-display">
+                                            <div class="amount-primary">${clientCommission.toFixed(2)} جنيه</div>
+                                            <div class="percentage-secondary">%${invoice.clientCommissionRate}</div>
+                                        </div>
                                     </td>
                                     <td>
-                                        <div>%${invoice.distributorCommissionRate}</div>
-                                        <small class="text-muted">${distributorCommission.toFixed(2)} جنيه</small>
+                                        <div class="commission-display">
+                                            <div class="amount-primary">${distributorCommission.toFixed(2)} جنيه</div>
+                                            <div class="percentage-secondary">%${invoice.distributorCommissionRate}</div>
+                                        </div>
                                     </td>
                                     <td>
-                                        <div>%${invoice.companyCommissionRate}</div>
-                                        <small class="text-muted">${companyCommission.toFixed(2)} جنيه</small>
+                                        <div class="commission-display">
+                                            <div class="amount-primary">${companyCommission.toFixed(2)} جنيه</div>
+                                            <div class="percentage-secondary">%${invoice.companyCommissionRate}</div>
+                                        </div>
                                     </td>
                                     <td>
                                         <span class="badge ${netProfit >= 0 ? 'bg-success' : 'bg-danger'}">
@@ -501,6 +507,50 @@ ${profitStats && Object.keys(profitStats).length > 0 ? `
     background-color: var(--input-bg);
 }
 
+/* Commission Display Styling */
+.commission-display {
+    text-align: center;
+    line-height: 1.2;
+}
+
+.amount-primary {
+    font-weight: 600;
+    font-size: 0.95em;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.percentage-secondary {
+    font-size: 0.8em;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* Dark mode support for commission display */
+[data-theme="dark"] .amount-primary {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .percentage-secondary {
+    color: var(--text-muted);
+}
+
+/* Light mode specific styling */
+[data-theme="light"] .amount-primary {
+    color: #333333;
+}
+
+[data-theme="light"] .percentage-secondary {
+    color: #6c757d;
+}
+
+/* Enhanced table styling for commission columns */
+.table td .commission-display {
+    padding: 4px 0;
+    min-width: 80px;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
     .btn-toolbar .btn-group {
         margin-bottom: 10px;
@@ -509,6 +559,40 @@ ${profitStats && Object.keys(profitStats).length > 0 ? `
     .table-responsive {
         font-size: 0.875rem;
     }
+    
+    .commission-display {
+        min-width: 70px;
+    }
+    
+    .amount-primary {
+        font-size: 0.85em;
+    }
+    
+    .percentage-secondary {
+        font-size: 0.75em;
+    }
+}
+
+/* Hover effects for better UX */
+.table tbody tr:hover .commission-display .amount-primary {
+    color: var(--primary-color, #007bff);
+    transition: color 0.2s ease;
+}
+
+/* Ensure consistent alignment */
+.table th, .table td {
+    vertical-align: middle;
+}
+
+/* Better spacing for commission columns */
+.table th:nth-child(6),
+.table th:nth-child(7),
+.table th:nth-child(8),
+.table td:nth-child(6),
+.table td:nth-child(7),
+.table td:nth-child(8) {
+    min-width: 100px;
+    text-align: center;
 }
 </style>
 
@@ -555,7 +639,7 @@ function exportData(format) {
         // Download CSV file
         const link = document.createElement('a');
         link.href = exportUrl;
-        link.download = \`invoices-report-\${document.getElementById('monthSelector').value}.csv\`;
+        link.download = `invoices-report-${document.getElementById('monthSelector').value}.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
